@@ -9,24 +9,25 @@ public class SwawshCredential {
         self.dateService = dateService
         self.digestService = digestService
     }
-    
+
     let dateFormatter = DateFormatter()
     let amzDateFormatter = DateFormatter()
     let timeZone = TimeZone(abbreviation: "GMT")
-    
-    public static let sharedInstance = SwawshCredential(
-        dateService: DateService(
-            date: Date(),
-            dateFormatter: DateFormatter.dateFormatterFactory(),
-            amzDateFormatter: DateFormatter.amzDateFormatterFactory()
-        ),
-        digestService: DigestService()
-    )
-    
+
+    public static sharedInstance() -> SwawshCredential {
+        return SwawshCredential(
+                  dateService: DateService(
+                      date: Date(),
+                      dateFormatter: DateFormatter.dateFormatterFactory(),
+                      amzDateFormatter: DateFormatter.amzDateFormatterFactory()
+                  ),
+                  digestService: DigestService())
+    }
+
     public func getDate() -> String {
         return dateService.getAmzDate()
     }
-    
+
     public func generateCredential(method: Method,
                             path: String,
                             endPoint: String,
@@ -36,7 +37,7 @@ public class SwawshCredential {
                             service: String,
                             accessKeyId: String,
                             secretKey: String) -> String? {
-        
+
         let header = SwaswshHeader(
             method: method,
             resourcePath: path,
@@ -48,11 +49,11 @@ public class SwawshCredential {
             dateHeaderKey: "",
             payloadDigest: payloadDigest
         )
-        
+
         guard let headerDigest = digestService.sha256Digest(string: header.canonicalHeader) else {
             return nil
         }
-        
+
         let stringToSign = SwawshStringToSign(
             date: header.date,
             headerDigest: headerDigest,
@@ -60,25 +61,25 @@ public class SwawshCredential {
             service: service,
             amzDate: header.amzDate
         )
-        
+
         let signingKey = digestService.generateSigningKey(
             secret: secretKey,
             date: header.date,
             awsRegion: region,
             awsService: service
         )
-        
+
         guard let signature = digestService.HMACDigestString(key: signingKey, update: stringToSign.value) else {
             return nil
         }
-        
+
         let authorization = SwawshAuthorization(
             header: header,
             accesssKeyId: accessKeyId,
             region: region,
             service: service,
             signature: signature)
-        
+
         return authorization.authorizationValue
-    }    
+    }
 }
