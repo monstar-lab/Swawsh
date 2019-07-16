@@ -14,14 +14,24 @@ public class SwawshCredential {
     let amzDateFormatter = DateFormatter()
     let timeZone = TimeZone(abbreviation: "GMT")
 
-    public static sharedInstance() -> SwawshCredential {
+    public static let sharedInstance = SwawshCredential(
+        dateService: DateService(
+            date: Date(),
+            dateFormatter: DateFormatter.dateFormatterFactory(),
+            amzDateFormatter: DateFormatter.amzDateFormatterFactory()
+        ),
+        digestService: DigestService()
+    )
+
+    public static func newInstance() -> SwawshCredential {
         return SwawshCredential(
-                  dateService: DateService(
-                      date: Date(),
-                      dateFormatter: DateFormatter.dateFormatterFactory(),
-                      amzDateFormatter: DateFormatter.amzDateFormatterFactory()
-                  ),
-                  digestService: DigestService())
+            dateService: DateService(
+                date: Date(),
+                dateFormatter: DateFormatter.dateFormatterFactory(),
+                amzDateFormatter: DateFormatter.amzDateFormatterFactory()
+            ),
+            digestService: DigestService()
+        )
     }
 
     public func getDate() -> String {
